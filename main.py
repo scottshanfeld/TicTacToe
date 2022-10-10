@@ -12,10 +12,6 @@ class node:
     def setNext(self, newBoard, move):
         self.next.append(node(newBoard, [], move))
 
-class tree:
-
-    def __init__(self, start):
-        self.root = start
 
 
 class tictactoe:
@@ -24,9 +20,14 @@ class tictactoe:
         self.board = [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']]
         self.bestState = [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']]
         self.bestMove = [-1,-1]
+        self.turn = 0
 
     def setBoard(self, customBoard):
         self.board = customBoard
+
+    def setTurn(self, player):
+        if player == "X":
+            self.turn += 1
 
     def takeSpace(self, piece, row, col):
         if row == 'top':
@@ -98,6 +99,33 @@ class tictactoe:
         print("---+---+---")
         print(" " + board[2][0] + " | " + board[2][1] + " | " + board[2][2] + " ")
 
+    def showOptimalMove(self,player):
+        depth = 0
+        root = node(self.board, [], [-1, -1])
+        self.stateTree(root, player)
+        for eachRow in self.board:
+            depth += eachRow.count(" ")
+        bestEval = self.minimaxAlphaBeta(root, depth, -1000000, 10000000, player)  # returns eval and changes self.bestState and self.bestMove
+        #bestEval = self.minimax(root, depth, player)  # returns eval and changes self.bestState and self.bestMove
+
+        y = self.bestMove[0]
+        x = self.bestMove[1]
+        if y == 0:
+            move = "top"
+        elif y == 1:
+            move = "middle"
+        elif y == 2:
+            move = "bottom"
+
+        if x == 0:
+            move += " left"
+        elif x == 1:
+            move += " middle"
+        elif x == 2:
+            move += " right"
+
+        print(player, "'s Optimal Move: ", move)
+
     def getMove(self, player, isAI):
         if isAI:
             depth = 0
@@ -131,24 +159,24 @@ class tictactoe:
         return move
 
     def playGame(self):
-        turn = 0
         while(self.checkWin() == 2):
             self.showBoard(self.board)
-            print("Board score: " ,self.evaluate(self.board))
-            if turn % 2 == 0:
+            print()
+            if self.turn % 2 == 0:
                 print("O's Turn!")
                 piece = "O"
-                move = self.getMove("O", True)
+                move = self.getMove("O", True) #set to true for ai player
             else:
                 print("X's Turn!")
                 piece = "X"
+                self.showOptimalMove("X")
                 move = self.getMove("X", False)
 
 
             move = move.split(" ")
 
             self.takeSpace(piece,move[0], move[1])
-            turn += 1
+            self.turn += 1
 
         result = self.checkWin()
         if result == 1:
@@ -174,114 +202,40 @@ class tictactoe:
     #O is max-ing, X is min-ing
     def evaluate(self, board):
         score = 0
-        # Checking for Rows for X or O victory.
+        # row victory
         for row in range(3):
             if (board[row][0] == board[row][1] and board[row][1] == board[row][2]):
                 if (board[row][0] == "O"):
-                    score += 1000
-                elif (board[row][0] == "X"):
-                    score += -1000
-            #check for near victory------------------------------
-            if board[row][0] == board[row][1] and board[row][2] == " ":
-                if (board[row][0] == "O"):
                     score += 10
-                elif (board[row][0] == "X"):
+                if (board[row][0] == "X"):
                     score += -10
 
-            if board[row][1] == board[row][2] and board[row][0] == " ":
-                if (board[row][1] == "O"):
-                    score += 10
-                elif (board[row][1] == "X"):
-                    score += -10
-
-            if board[row][0] == board[row][2] and board[row][1] == " ":
-                if (board[row][0] == "O"):
-                    score += 10
-                elif (board[row][0] == "X"):
-                    score += -10
-            #------------------------------------------
-        # Checking for Columns for X or O victory.
+        # column victory.
         for col in range(3):
 
             if (board[0][col] == board[1][col] and board[1][col] == board[2][col]):
 
                 if (board[0][col] == "O"):
-                    score += 1000
-                elif (board[0][col] == "X"):
-                    score += -1000
-            # check for near victory------------------------------
-            if board[0][col] == board[1][col] and board[2][col] == " ":
-                if (board[0][col] == "O"):
                     score += 10
-                elif (board[0][col] == "X"):
+                if (board[0][col] == "X"):
                     score += -10
 
-            if board[1][col] == board[2][col] and board[0][col] == " ":
-                if (board[1][col] == "O"):
-                    score += 10
-                elif (board[1][col] == "X"):
-                    score += -10
 
-            if board[0][col] == board[2][col] and board[1][col] == " ":
-                if (board[0][col] == "O"):
-                    score += 10
-                elif (board[0][col] == "X"):
-                    score += -10
-            # ------------------------------------------
-
-
-        # Checking for Diagonals for X or O victory.
+        # diagnol victory
         if (board[0][0] == board[1][1] and board[1][1] == board[2][2]):
 
             if (board[0][0] == "O"):
-                score += 1000
-            elif (board[0][0] == "X"):
-                score += -1000
+                score += 10
+            if (board[0][0] == "X"):
+                score += -10
 
         if (board[0][2] == board[1][1] and board[1][1] == board[2][0]):
 
             if (board[0][2] == "O"):
-                score += 1000
-            elif (board[0][2] == "X"):
-                score += -1000
-
-        # check for near victory------------------------------
-        if board[0][0] == board[1][1] and board[2][2] == " ":
-            if (board[0][0] == "O"):
                 score += 10
-            elif (board[0][0] == "X"):
+            if (board[0][2] == "X"):
                 score += -10
 
-        if board[1][1] == board[2][2] and board[0][0] == " ":
-            if (board[1][1] == "O"):
-                score += 10
-            elif (board[1][1] == "X"):
-                score += -10
-
-        if board[0][0] == board[2][2] and board[1][1] == " ":
-            if (board[0][0] == "O"):
-                score += 10
-            elif (board[0][0] == "X"):
-                score += -10
-
-        if board[0][2] == board[1][1] and board[2][0] == " ":
-            if (board[0][2] == "O"):
-                score += 10
-            elif (board[0][2] == "X"):
-                score += -10
-
-        if board[1][1] == board[2][0] and board[0][2] == " ":
-            if (board[1][1] == "O"):
-                score += 10
-            elif (board[1][1] == "X"):
-                score += -10
-
-        if board[0][2] == board[2][0] and board[1][1] == " ":
-            if (board[0][2] == "O"):
-                score += 10
-            elif (board[0][2] == "X"):
-                score += -10
-        # ------------------------------------------
 
         # Else if none of them have won then score is 0
         return score
@@ -382,4 +336,6 @@ class tictactoe:
 
 
 game = tictactoe()
+#game.setBoard([[' ', ' ', 'O'],['X', 'O', 'O'],[' ', ' ', 'X']])
+#game.setTurn("X")
 game.playGame()
