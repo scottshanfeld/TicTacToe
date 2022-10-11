@@ -105,8 +105,8 @@ class tictactoe:
         self.stateTree(root, player)
         for eachRow in self.board:
             depth += eachRow.count(" ")
-        bestEval = self.minimaxAlphaBeta(root, depth, -1000000, 10000000, player)  # returns eval and changes self.bestState and self.bestMove
-        #bestEval = self.minimax(root, depth, player)  # returns eval and changes self.bestState and self.bestMove
+        #bestEval = self.minimaxAlphaBeta(root, depth, -100000, 100000, player)  # returns eval and changes self.bestState and self.bestMove
+        bestEval = self.minimax(root, depth, player)  # returns eval and changes self.bestState and self.bestMove
 
         y = self.bestMove[0]
         x = self.bestMove[1]
@@ -133,7 +133,7 @@ class tictactoe:
             self.stateTree(root, player)
             for eachRow in self.board:
                 depth += eachRow.count(" ")
-            bestEval = self.minimaxAlphaBeta(root, depth, -1000000, 10000000, player)  # returns eval and changes self.bestState and self.bestMove
+            bestEval = self.minimaxAlphaBeta(root, depth, -100000, 100000, player)  # returns eval and changes self.bestState and self.bestMove
             #bestEval = self.minimax(root, depth, player)  # returns eval and changes self.bestState and self.bestMove
 
             y = self.bestMove[0]
@@ -169,7 +169,7 @@ class tictactoe:
             else:
                 print("X's Turn!")
                 piece = "X"
-                self.showOptimalMove("X")
+                #self.showOptimalMove("X")
                 move = self.getMove("X", False)
 
 
@@ -201,14 +201,13 @@ class tictactoe:
     #evaluation function made with help from https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-3-tic-tac-toe-ai-finding-optimal-move/
     #O is max-ing, X is min-ing
     def evaluate(self, board):
-        score = 0
         # row victory
         for row in range(3):
             if (board[row][0] == board[row][1] and board[row][1] == board[row][2]):
                 if (board[row][0] == "O"):
-                    score += 10
+                    return 10
                 if (board[row][0] == "X"):
-                    score += -10
+                    return -10
 
         # column victory.
         for col in range(3):
@@ -216,29 +215,29 @@ class tictactoe:
             if (board[0][col] == board[1][col] and board[1][col] == board[2][col]):
 
                 if (board[0][col] == "O"):
-                    score += 10
+                    return 10
                 if (board[0][col] == "X"):
-                    score += -10
+                    return -10
 
 
         # diagnol victory
         if (board[0][0] == board[1][1] and board[1][1] == board[2][2]):
 
             if (board[0][0] == "O"):
-                score += 10
+                return 10
             if (board[0][0] == "X"):
-                score += -10
+                return -10
 
         if (board[0][2] == board[1][1] and board[1][1] == board[2][0]):
 
             if (board[0][2] == "O"):
-                score += 10
+                return 10
             if (board[0][2] == "X"):
-                score += -10
+                return -10
 
 
-        # Else if none of them have won then score is 0
-        return score
+        # else if none of them have won then score is 0
+        return 0
 
     def stateTree(self, currBoard, player):
         piece = player
@@ -272,8 +271,8 @@ class tictactoe:
         else:
             maxing = False
 
-        if depth == 0:
-            self.bestState = state
+        if depth == 0 or self.evaluate(state.value) != 0:
+            #self.bestState = state
             return self.evaluate(state.value)
 
         if maxing:
@@ -301,7 +300,7 @@ class tictactoe:
         else:
             maxing = False
 
-        if depth == 0:
+        if depth == 0 or self.evaluate(state.value) != 0:
             self.bestState = state
             return self.evaluate(state.value)
 
@@ -311,11 +310,11 @@ class tictactoe:
                 eval = self.minimaxAlphaBeta(eachNextState, depth-1, alpha, beta, "X")
                 maxEval = max(maxEval,eval)
                 alpha = max(alpha, eval)
-                if beta <= alpha:
-                    break
                 if maxEval == eval:
                     self.bestState = eachNextState
                     self.bestMove = eachNextState.move
+                if beta <= alpha:
+                    break
             return maxEval
         else:
             minEval = 100000
@@ -323,11 +322,11 @@ class tictactoe:
                 eval = self.minimaxAlphaBeta(eachNextState, depth - 1, alpha, beta, "O")
                 minEval = min(minEval, eval)
                 beta = min(beta, eval)
-                if beta <= alpha:
-                    break
                 if minEval == eval:
                     self.bestState = eachNextState
                     self.bestMove = eachNextState.move
+                if beta <= alpha:
+                    break
             return minEval
 
 
